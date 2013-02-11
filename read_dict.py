@@ -2,6 +2,17 @@
 This will have the dictionary reading and letters counting class.
 """
 
+import logging
+
+def write_log(mesg):
+    """Write to whatever logger we're using.
+    
+    Arguments:
+    - `mesg`:
+    """
+    logging.debug(mesg)
+
+
 class DictAndLetters():
     """
     This reads in the dictionary file from a file.
@@ -18,10 +29,12 @@ class DictAndLetters():
         dict_file.
         """
         
-        for line in _d:
+        for line in dict_file:
+            line = line.decode('utf-8').strip()
             if transform:
                 line = transform(line)
-            self.wordlist.append(line.strip().decode('utf-8'))
+                
+            self.wordlist.append(line)
 
         lettercount = {}
 
@@ -48,4 +61,15 @@ class DictAndLetters():
         - `self`:
         - `word`:
         """
-        pass
+        return word in self.wordlist
+
+
+if __name__ == '__main__':
+    with open('dict') as dict_file:
+        dal_dict = DictAndLetters(dict_file, lambda (line): line.upper())
+
+    for word in dal_dict.wordlist:
+        print word
+
+    for k, v in sorted(dal_dict.letter_points.iteritems(), key = lambda (k, v): (v, k)):
+        print u"{0}: {1}".format(k, v)
