@@ -38,7 +38,7 @@ class WordMatrix():
         - `self`:
         """
         horiz_list = self._matrix_string.split('\n')
-        vert_list = zip(*horiz_list)
+        vert_list = map(None, *horiz_list)
 
         get_words = lambda line: [s for s in \
                                       line.decode('utf8').strip().split() \
@@ -47,6 +47,7 @@ class WordMatrix():
             self._wordlist.extend(get_words(word))
 
         for word in vert_list:
+            word = map(lambda x: x if x != None else ' ', word)
             self._wordlist.extend(get_words(u''.join(word)))
 
 if __name__ == '__main__':
@@ -65,6 +66,16 @@ train
  veritable
    dead   
      odd  """)
+    _uneven = WordMatrix(\
+u"""   u
+   n
+train
+   t
+   at
+ veritable
+   dead
+     odd""")
+
 
     def print_list(str_list):
         for word in str_list:
@@ -76,3 +87,5 @@ train
     print_list(vertical.wordlist)
     print "Complex case:"
     print_list(_complex.wordlist)
+    print "Complex 2 case (uneven):"
+    print_list(_uneven.wordlist)
