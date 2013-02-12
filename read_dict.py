@@ -2,18 +2,38 @@
 This will have the dictionary reading and letters counting class.
 """
 
-class DictAndLetters():
+class DictAndLetters(object):
     """
     This reads in the dictionary file from a file.
     """
-    wordlist = []
-    letter_points = None
+    _wordlist = []
+    _letter_points = None
+
+    @property
+    def wordlist(self):
+        """Returns the word list.
+        
+        Arguments:
+        - `self`:
+        """
+        return self._wordlist
+
+    @property
+    def letter_points(self):
+        """Returns the letters and points dictionary.
+        
+        Arguments:
+        - `self`:
+        """
+        return self._letter_points
+
     
     def __init__(self, dict_file, transform=None):
         """
         
-        Arguments: - `dict_file`: An iterable object containing the
-        words to read.
+        Arguments:
+        - `dict_file`: An iterable object containing the words to
+        read.
         - `transform`: Function to perform on each word read from
         dict_file.
         """
@@ -23,11 +43,11 @@ class DictAndLetters():
             if transform:
                 line = transform(line)
                 
-            self.wordlist.append(line)
+            self._wordlist.append(line)
 
         lettercount = {}
 
-        for word in self.wordlist:
+        for word in self._wordlist:
             for letter in word:
                 if letter in lettercount:
                     lettercount[letter] += 1
@@ -41,7 +61,7 @@ class DictAndLetters():
             letters_sorted.append(key)
             counts_sorted.append(val)
 
-        self.letter_points = dict(zip(letters_sorted, reversed(counts_sorted)))
+        self._letter_points = dict(zip(letters_sorted, reversed(counts_sorted)))
 
     def __contains__(self, word):
         """Returns whether the word is in the word list.
@@ -50,7 +70,7 @@ class DictAndLetters():
         - `self`:
         - `word`:
         """
-        return word in self.wordlist
+        return word in self._wordlist
 
     def get_points(self, word):
         """Return the number of points for a word.
@@ -59,12 +79,9 @@ class DictAndLetters():
         - `self`:
         - `word`:
         """
-        if not word in self.wordlist:
-            return 0
-
         _sum = 0
         for letter in word:
-            _sum += self.letter_points[letter]
+            _sum += self._letter_points[letter]
 
         return _sum
 
