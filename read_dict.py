@@ -2,17 +2,6 @@
 This will have the dictionary reading and letters counting class.
 """
 
-import logging
-
-def write_log(mesg):
-    """Write to whatever logger we're using.
-    
-    Arguments:
-    - `mesg`:
-    """
-    logging.debug(mesg)
-
-
 class DictAndLetters():
     """
     This reads in the dictionary file from a file.
@@ -63,6 +52,23 @@ class DictAndLetters():
         """
         return word in self.wordlist
 
+    def get_points(self, word):
+        """Return the number of points for a word.
+        
+        Arguments:
+        - `self`:
+        - `word`:
+        """
+        if not word in self.wordlist:
+            return 0
+
+        _sum = 0
+        for letter in word:
+            _sum += self.letter_points[letter]
+
+        return _sum
+
+
 
 if __name__ == '__main__':
     with open('dict') as dict_file:
@@ -73,3 +79,8 @@ if __name__ == '__main__':
 
     for k, v in sorted(dal_dict.letter_points.iteritems(), key = lambda (k, v): (v, k)):
         print u"{0}: {1}".format(k, v)
+
+    wordtest = raw_input("Word to find: ").strip().encode('utf-8').upper()
+
+    print u"{0} is a word: {1}".format(wordtest, wordtest in dal_dict)
+    print u"points awarded: {0}".format(dal_dict.get_points(wordtest))
