@@ -2,13 +2,19 @@
 This will be the class for storing the words.
 """
 
+#this is meant to be reassigned to a function that either prints to
+#the screen or to a logger, or otherwise meant to look like a
+#function, but does nothing when it's not needed
+matrix_logger = None
+
 class Coords(object):
     """
     """
     x = None
     y = None
+    highlight_char = None
     
-    def __init__(self, x, y):
+    def __init__(self, x, y, highlight_char = None):
         """
         
         Arguments:
@@ -21,6 +27,7 @@ class Coords(object):
             raise TypeException("y is not an integer.")
         self.x = x
         self.y = y
+        self.highlight_char = highlight_char
 
     def __repr__(self):
         """
@@ -28,7 +35,7 @@ class Coords(object):
         Arguments:
         - `self`:
         """
-        return "Coords({0}, {1})".format(self.x, self.y)
+        return u"{0}({1}, {2}, '{3}')".format(self.__class__.__name__, self.x, self.y, repr(self.highlight_char))
 
     def __str__(self):
         """
@@ -36,7 +43,16 @@ class Coords(object):
         Arguments:
         - `self`:
         """
-        return "x = {0} ; y = {1}".format(self.x, self.y)
+        return u"x = {0} ; y = {1} ; highlight = '{2}'".format(self.x, self.y, self.highlight_char)
+
+    def __eq__(self, other):
+        """
+        
+        Arguments:
+        - `self`:
+        - `other`:
+        """
+        return self.x == other.x and self.y == other.y
 
 
 
@@ -52,7 +68,7 @@ class SubMatrix(object):
         Arguments:
         - `self`:
         """
-        return "SubMatrix(tl:{0}, br:{1})".format(repr(self._top_left), repr(self._bottom_right))
+        return u"{0}(tl:{1}, br:{2})".format(self.__class__.__name__, repr(self._top_left), repr(self._bottom_right))
 
     def __str__(self):
         """
@@ -60,7 +76,7 @@ class SubMatrix(object):
         Arguments:
         - `self`:
         """
-        return "top left: {0}\n\tbottom right: {1}".format(str(self._top_left), str(self._bottom_right))
+        return u"top left: {0}\n\tbottom right: {1}".format(str(self._top_left), str(self._bottom_right))
 
     @property
     def top_left(self):
@@ -179,38 +195,91 @@ class WordMatrix(object):
         coords_list = []
 
         empty = (' ', '', '0', 0, None) #zero is for testing
-        def next_is_occupied(_x, _y):
-            if len(self._transposed[_y]) <= _x:
-                return False
-
-            return not self._transposed[_y][_x + 1] in empty
-
-        def below_is_occupied(_x, _y):
-            if len(self._transposed) <= _y:
-                return False
-
-            return not self._transposed[_y + 1][_x] in empty
-
-
-        def find_bottom_right(_x, _y):
-            if next_is_occupied(_x, _y):
-                return find_bottom_right(_x + 1, _y)
-            elif below_is_occupied(_x, _y):
-                return find_bottom_right(_x, _y + 1)
-
-            return Coords(_x, _y)
-
-        def is_contiguous(subm):
+        def print_matrix(*coords):
             """
             
             Arguments:
-            - `subm`:
+            - `*coords`:
             """
-            for _y in range(subm.tl.y + 1, subm.br.y):
-                for _x in range(subm.tl.x, subm.br.x - 1):
-                    if self._transposed[_y][_x] in empty:
-                        return False
+            if not matrix_logger:
+                return
 
+            print_string = u"\n"
+            
+            for _y in xrange(0, len(self._transposed)):
+                for _x in xrange(0, len(self._transposed[_y])):
+                    try:
+                        highlight_coord = coords[coords.index(Coords(_x, _y))]
+                    except ValueError:
+                        highlight_coord = None
+                    if highlight_coord:
+                        print_string += u"\t{0}{1}".format(self._transposed[_y][_x], highlight_coord.highlight_char)
+                    else:
+                        print_string += u"\t{0}".format(self._transposed[_y][_x])
+
+                print_string += u"\n"
+
+            matrix_logger(print_string)
+
+        def next_is_occupied(_x, _y):
+            rt_arrow = u"\u21e8"
+            if len(self._transposed[_y]) <= _x:
+                print_matrix(Coords(_x, _y, rt_arrow))
+                return False
+
+            print_matrix(Coords(_x, _y, rt_arrow), Coords(_x + 1, _y, "*"))
+            return not self._transposed[_y][_x + 1] in empty
+
+        def below_is_occupied(_x, _y):
+            dn_arrow = u"\u21e9"
+            if len(self._transposed) <= _y:
+                print_matrix(Coords(_x, _y, dn_arrow))
+                return False
+
+            print_matrix(Coords(_x, _y, dn_arrow), Coords(_x, _y + 1, "*"))
+            return not self._transposed[_y + 1][_x] in empty
+
+
+        def find_bottom_right(_x, _y, xstop = 100, ystop = 100, level = 0):
+            if matrix_logger:
+                matrix_logger("Trying to find submatrix, level {0}, xstop {1}, ystop {2}:".format(level, xstop, ystop))
+                print_matrix(Coords(_x, _y, "@"))
+            if _x <= xstop and next_is_occupied(_x, _y):
+                return find_bottom_right(_x + 1, _y, xstop = xstop,
+                                         ystop = ystop, level = level + 1)
+            if _y <= ystop and below_is_occupied(_x, _y):
+                return find_bottom_right(_x, _y + 1, xstop = xstop,
+                                         ystop = ystop, level = level + 1)
+
+            if matrix_logger:
+                matrix_logger("Found bottom right, level {0}:".format(level))
+                print_matrix(Coords(_x, _y, "$"))
+            return Coords(_x, _y)
+
+        def is_contiguous(subm):
+            if matrix_logger:
+                matrix_logger("Checking for contiguousness:")
+
+            top_left = subm.tl
+            bottom_rt = subm.br
+            top_left.highlight_char = u"\u21e8"
+            bottom_rt.highlight_char = u"\u21e7"
+            coords = [top_left, bottom_rt]
+            _yrange = xrange(subm.tl.y + 1, subm.br.y) if (subm.tl.y - subm.br.y > 1) else [subm.br.y]
+            _xrange = xrange(subm.tl.x, subm.br.x - 1) if (subm.tl.x - subm.br.y > 1) else [subm.tl.x]
+            for _y in _yrange:
+                for _x in _xrange:
+                    if self._transposed[_y][_x] in empty:
+                        if matrix_logger:
+                            matrix_logger("\tNot contiguous")
+                            coords.append(Coords(_x, _y, "!"))
+                            print_matrix(*coords)
+                        return False
+                    coords.append(Coords(_x, _y, "+"))
+                    
+            if matrix_logger:
+                print_matrix(*coords)
+                matrix_logger("\tIs  contiguous")
             return True
 
 
@@ -218,21 +287,58 @@ class WordMatrix(object):
         y = 0
         for row in self._transposed:
             for col in row:
+                if matrix_logger:
+                    matrix_logger("Current position:")
+                    print_matrix(Coords(x, y, "^"))
                 if (not col in empty) and next_is_occupied(x, y) and \
                         below_is_occupied(x, y):
                     bottom_rt = find_bottom_right(x, y)
-                    if (bottom_rt.x - x > 0) and (bottom_rt.y - y > 0):
+                    _xrange = bottom_rt.x - x
+                    _yrange = bottom_rt.y - y
+                    if (_xrange > 0) and (_yrange > 0):
                         subm = SubMatrix(Coords(x, y), bottom_rt)
                         if is_contiguous(subm):
                             coords_list.append(subm)
+                    else:
+                        if _xrange == 0:
+                            stop_y = bottom_rt.y
+                            for _y in reversed(xrange(y, stop_y)):
+                                bottom_rt = find_bottom_right(x, _y, ystop = _y)
+                                if bottom_rt.x - x > 0:
+                                    subm = SubMatrix(Coords(x, _y), bottom_rt)
+                                    if is_contiguous(subm):
+                                        coords_list.append(subm)
+                                        break
+
+                        if _yrange == 0:
+                            stop_x = bottom_rt.x
+                            for _x in reversed(xrange(x, stop_x)):
+                                bottom_rt = find_bottom_right(_x, y, xstop = _x)
+                                if bottom_rt.y - y > 0:
+                                    subm = SubMatrix(Coords(_x, y), bottom_rt)
+                                    if is_contiguous(subm):
+                                        coords_list.append(subm)
+                                        break
                 x += 1
             x = 0
             y += 1
 
         self._submatrices = coords_list
 
-
+#all unit testing is being done here
 if __name__ == '__main__':
+    import logging
+    logging.basicConfig(level=logging.DEBUG)
+    def log_fn(mesg):
+        """
+        
+        Arguments:
+        - `mesg`:
+        """
+        logging.debug(mesg)
+
+    matrix_logger = log_fn
+
     simple = WordMatrix(u"word")
     vertical = WordMatrix(\
 u"""w
@@ -267,7 +373,7 @@ train
 
     def print_list(str_list):
         for word in str_list:
-            print "\t" + word
+            print u"\t" + word
 
     print "Simple case:"
     print_list(simple.wordlist)
@@ -281,4 +387,4 @@ train
     matrix_test.find_contiguous_blocks()
     print "Submatrices in matrix test:"
     for matrix in matrix_test._submatrices:
-        print "\t" + repr(matrix)
+        print u"\t" + repr(matrix)
