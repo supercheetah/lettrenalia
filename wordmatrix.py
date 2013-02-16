@@ -62,6 +62,46 @@ class SubMatrix(object):
     _top_left = None
     _bottom_right = None
 
+    def __eq__(self, other):
+        """
+        
+        Arguments:
+        - `self`:
+        - `other`:
+        """
+        return self._top_left == other._top_left and self._bottom_right == other._bottom_right
+
+
+    def Contains(self, other):
+        """
+        
+        Arguments:
+        - `self`:
+        - `other`:
+        """
+        if matrix_logger:
+            matrix_logger(u"Checking if {0} is inside {1}".format(repr(other), repr(self)))
+
+        if self == other:
+            return True
+        
+        if other._top_left.x < self._top_left.x:
+            return False
+
+        if other._top_left.y < self._top_left.x:
+            return False
+
+        if other._bottom_right.x > self._bottom_right.x:
+            return False
+
+        if other._bottom_right.y > self._bottom_right.y:
+            return False
+
+        if matrix_logger:
+            matrix_logger(u"\tTrue")
+        return True
+
+
     def __repr__(self):
         """
         
@@ -192,7 +232,7 @@ class WordMatrix(object):
         Arguments:
         - `self`:
         """
-        coords_list = []
+        submatrices = []
 
         empty = (' ', '', '0', 0, None) #zero is for testing
         def print_matrix(*coords):
@@ -223,7 +263,7 @@ class WordMatrix(object):
 
         def next_is_occupied(_x, _y):
             rt_arrow = u"\u21e8"
-            if len(self._transposed[_y]) <= _x:
+            if len(self._transposed[_y]) <= _x + 1:
                 print_matrix(Coords(_x, _y, rt_arrow))
                 return False
 
@@ -232,7 +272,7 @@ class WordMatrix(object):
 
         def below_is_occupied(_x, _y):
             dn_arrow = u"\u21e9"
-            if len(self._transposed) <= _y:
+            if len(self._transposed) <= _y + 1:
                 print_matrix(Coords(_x, _y, dn_arrow))
                 return False
 
@@ -247,6 +287,9 @@ class WordMatrix(object):
             if _x <= xstop and next_is_occupied(_x, _y):
                 return find_bottom_right(_x + 1, _y, xstop = xstop,
                                          ystop = ystop, level = level + 1)
+            else:
+                xstop = xstop if xstop <= _x else _x - 1
+                
             if _y <= ystop and below_is_occupied(_x, _y):
                 return find_bottom_right(_x, _y + 1, xstop = xstop,
                                          ystop = ystop, level = level + 1)
@@ -265,8 +308,8 @@ class WordMatrix(object):
             top_left.highlight_char = u"\u21e8"
             bottom_rt.highlight_char = u"\u21e7"
             coords = [top_left, bottom_rt]
-            _yrange = xrange(subm.tl.y + 1, subm.br.y) if (subm.tl.y - subm.br.y > 1) else [subm.br.y]
-            _xrange = xrange(subm.tl.x, subm.br.x - 1) if (subm.tl.x - subm.br.y > 1) else [subm.tl.x]
+            _yrange = xrange(top_left.y + 1, bottom_rt.y + 1) if (bottom_rt.y - top_left.y > 1) else [bottom_rt.y]
+            _xrange = xrange(top_left.x, bottom_rt.x) if (bottom_rt.x - top_left.x > 1) else [top_left.x]
             for _y in _yrange:
                 for _x in _xrange:
                     if self._transposed[_y][_x] in empty:
@@ -293,37 +336,32 @@ class WordMatrix(object):
                 if (not col in empty) and next_is_occupied(x, y) and \
                         below_is_occupied(x, y):
                     bottom_rt = find_bottom_right(x, y)
-                    _xrange = bottom_rt.x - x
-                    _yrange = bottom_rt.y - y
-                    if (_xrange > 0) and (_yrange > 0):
+                    if (bottom_rt.x - x > 0) and (bottom_rt.y - y > 0):
                         subm = SubMatrix(Coords(x, y), bottom_rt)
-                        if is_contiguous(subm):
-                            coords_list.append(subm)
-                    else:
-                        if _xrange == 0:
-                            stop_y = bottom_rt.y
-                            for _y in reversed(xrange(y, stop_y)):
-                                bottom_rt = find_bottom_right(x, _y, ystop = _y)
-                                if bottom_rt.x - x > 0:
-                                    subm = SubMatrix(Coords(x, _y), bottom_rt)
-                                    if is_contiguous(subm):
-                                        coords_list.append(subm)
-                                        break
+                        is_sub_submatrix = False
+                        for _subm in submatrices:
+                            if _subm.Contains(subm):
+                                is_sub_submatrix = True
+                                break
+                        if (not is_sub_submatrix) and is_contiguous(subm):
+                            submatrices.append(subm)
 
-                        if _yrange == 0:
-                            stop_x = bottom_rt.x
-                            for _x in reversed(xrange(x, stop_x)):
-                                bottom_rt = find_bottom_right(_x, y, xstop = _x)
-                                if bottom_rt.y - y > 0:
-                                    subm = SubMatrix(Coords(_x, y), bottom_rt)
-                                    if is_contiguous(subm):
-                                        coords_list.append(subm)
-                                        break
+                    for _x in reversed(xrange(x, bottom_rt.x - 1)):
+                        br_x = find_bottom_right(x, y, xstop = _x)
+                        is_sub_submatrix = False
+                        if br_x.y - y > 0:
+                            subm = SubMatrix(Coords(x, y), br_x)
+                            for _subm in submatrices:
+                                if _subm.Contains(subm):
+                                    is_sub_submatrix = True
+                                    break
+                            if (not is_sub_submatrix) and is_contiguous(subm):
+                                submatrices.append(subm)
                 x += 1
             x = 0
             y += 1
 
-        self._submatrices = coords_list
+        self._submatrices = submatrices
 
 #all unit testing is being done here
 if __name__ == '__main__':
@@ -370,6 +408,31 @@ train
                                [0, 1, 1, 0, 0],
                                [0, 0, 0, 0, 0]] )
 
+    matrix_test_single = WordMatrix( [[0, 0, 0, 0, 0],
+                                      [0, 1, 1, 1, 0],
+                                      [0, 1, 1, 1, 0],
+                                      [0, 1, 1, 1, 0],
+                                      [0, 0, 0, 0, 0]] )
+
+    matrix_test_2 = WordMatrix( [[0, 0, 0, 0, 0],
+                                 [0, 1, 1, 1, 1],
+                                 [0, 1, 1, 1, 1],
+                                 [0, 1, 1, 1, 1],
+                                 [0, 1, 1, 1, 0]] )
+
+    matrix_test_fail = WordMatrix( [[0, 0, 0, 0, 0],
+                                    [0, 1, 1, 1, 0],
+                                    [0, 1, 0, 1, 0],
+                                    [0, 1, 1, 1, 0],
+                                    [0, 0, 0, 0, 0]] )
+
+    matrix_stair_case = WordMatrix( [[0, 0, 0, 0, 0],
+                                     [0, 1, 1, 1, 1],
+                                     [0, 1, 1, 1, 0],
+                                     [0, 1, 1, 0, 0],
+                                     [0, 1, 0, 0, 0],
+                                     [0, 0, 0, 0, 0]] )
+
 
     def print_list(str_list):
         for word in str_list:
@@ -387,4 +450,24 @@ train
     matrix_test.find_contiguous_blocks()
     print "Submatrices in matrix test:"
     for matrix in matrix_test._submatrices:
+        print u"\t" + repr(matrix)
+
+    matrix_test_single.find_contiguous_blocks()
+    print "Single submatrix test:"
+    for matrix in matrix_test_single._submatrices:
+        print u"\t" + repr(matrix)
+
+    matrix_test_2.find_contiguous_blocks()
+    print "Two submatrix test with the same top left:"
+    for matrix in matrix_test_2._submatrices:
+        print u"\t" + repr(matrix)
+
+    matrix_test_fail.find_contiguous_blocks()
+    print "There should be no submatrices here:"
+    for matrix in matrix_test_fail._submatrices:
+        print u"\t" + repr(matrix)
+
+    matrix_stair_case.find_contiguous_blocks()
+    print "Stair case test, two submatrices with the same top left:"
+    for matrix in matrix_stair_case._submatrices:
         print u"\t" + repr(matrix)
