@@ -238,15 +238,13 @@ class WordMatrix(object):
     def find_contiguous_blocks(self):
         """Return list of coordinates in the matrix for contiguous
         blocks of letters. Must be at least of size 2x2.
-
-        num_of_ones(a,b,c,d) = helper_matrix[c][d] + helper_matrix[a-1][b-1] - helper_matrix[a-1][d] - helper_matrix[c][b-1]
         
         Arguments:
         - `self`:
         """
         submatrices = []
 
-        empty = (' ', '', '0', 0, None) #zero is for testing
+        empty = (' ', '', 0, None) #zero is for testing
         def print_matrix(*coords):
             if not matrix_logger:
                 return
@@ -302,7 +300,7 @@ class WordMatrix(object):
                                          ystop = ystop, level = level + 1)
 
             if matrix_logger:
-                matrix_logger("Found bottom right, level {0}:".format(level))
+                matrix_logger("Found bottom right, x={0}, y={1}, level {2}:".format(_x, _y, level))
                 print_matrix(Coords(_x, _y, "$"))
             return Coords(_x, _y)
 
@@ -355,10 +353,12 @@ class WordMatrix(object):
                     current_coords = Coords(x, y)
                     if (bottom_rt.x - x > 0) and (bottom_rt.y - y > 0):
                         add_submatrix(current_coords, bottom_rt)
+                    stop_x = x
                     for _x in reversed(xrange(x, bottom_rt.x - 1)):
-                        br_x = find_bottom_right(x, y, xstop = _x)
-                        if br_x.y - y > 0:
-                            add_submatrix(current_coords, br_x)
+                        for _y in reversed(xrange(y, bottom_rt.y + 1)):
+                            br_iter = find_bottom_right(_x, y, xstop = _x, ystop = _y)
+                            if br_iter.y - y > 0 and br_iter.x - x > 0:
+                                add_submatrix(current_coords, br_iter)                                
                 x += 1
             x = 0
             y += 1
@@ -435,41 +435,53 @@ train
                                      [0, 1, 0, 0, 0],
                                      [0, 0, 0, 0, 0]] )
 
+    matrix_col_test = WordMatrix( [[1, 1, 0, 0, 0],
+                                   [1, 1, 1, 1, 1],
+                                   [1, 1, 1, 1, 0],
+                                   [0, 0, 1, 1, 1]] )
+
 
     def print_list(str_list):
         for word in str_list:
             print u"\t" + word
 
-    print "Simple case:"
+    def find_and_print_matrices(wm):
+        """
+        
+        Arguments:
+        - `wm`:
+        """
+        wm.find_contiguous_blocks()
+        for matrix in wm._submatrices:
+            print u"\t" + repr(matrix)
+
+    print "Simple case (no matrices):"
     print_list(simple.wordlist)
-    print "Vertical case:"
+    find_and_print_matrices(simple)
+    print "Vertical case (no matrices):"
     print_list(vertical.wordlist)
-    print "Complex case:"
+    find_and_print_matrices(vertical)
+    print "Complex case (3 matrices):"
     print_list(_complex.wordlist)
-    print "Complex 2 case (uneven):"
+    find_and_print_matrices(_complex)
+    print "Complex 2 case (uneven) (3 matrices):"
     print_list(_uneven.wordlist)
+    find_and_print_matrices(_uneven)
 
-    matrix_test.find_contiguous_blocks()
-    print "Submatrices in matrix test:"
-    for matrix in matrix_test._submatrices:
-        print u"\t" + repr(matrix)
+    print "Two submatrices in matrix test:"
+    find_and_print_matrices(matrix_test)
 
-    matrix_test_single.find_contiguous_blocks()
     print "Single submatrix test:"
-    for matrix in matrix_test_single._submatrices:
-        print u"\t" + repr(matrix)
+    find_and_print_matrices(matrix_test_single)
 
-    matrix_test_2.find_contiguous_blocks()
     print "Two submatrix test with the same top left:"
-    for matrix in matrix_test_2._submatrices:
-        print u"\t" + repr(matrix)
+    find_and_print_matrices(matrix_test_2)
 
-    matrix_test_fail.find_contiguous_blocks()
     print "There should be no submatrices here:"
-    for matrix in matrix_test_fail._submatrices:
-        print u"\t" + repr(matrix)
+    find_and_print_matrices(matrix_test_fail)
 
-    matrix_stair_case.find_contiguous_blocks()
     print "Stair case test, two submatrices with the same top left:"
-    for matrix in matrix_stair_case._submatrices:
-        print u"\t" + repr(matrix)
+    find_and_print_matrices(matrix_stair_case)
+
+    print "Column test, there should be three submatrces:"
+    find_and_print_matrices(matrix_col_test)
