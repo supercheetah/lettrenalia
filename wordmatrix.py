@@ -2,9 +2,6 @@
 This will be the class for storing the words.
 """
 
-#this is meant to be reassigned to a function that either prints to
-#the screen or to a logger, or otherwise meant to look like a
-#function, but does nothing when it's not needed
 matrix_logger = None
 
 class Coords(object):
@@ -15,12 +12,6 @@ class Coords(object):
     highlight_char = None
     
     def __init__(self, x, y, highlight_char = None):
-        """
-        
-        Arguments:
-        - `x`:
-        - `y`:
-        """
         if not isinstance(x, int):
             raise TypeException("x is not an integer.")
         if not isinstance(y, int):
@@ -30,28 +21,12 @@ class Coords(object):
         self.highlight_char = highlight_char
 
     def __repr__(self):
-        """
-        
-        Arguments:
-        - `self`:
-        """
         return u"{0}({1}, {2}, '{3}')".format(self.__class__.__name__, self.x, self.y, repr(self.highlight_char))
 
     def __str__(self):
-        """
-        
-        Arguments:
-        - `self`:
-        """
         return u"x = {0} ; y = {1} ; highlight = '{2}'".format(self.x, self.y, self.highlight_char)
 
     def __eq__(self, other):
-        """
-        
-        Arguments:
-        - `self`:
-        - `other`:
-        """
         return self.x == other.x and self.y == other.y
 
 
@@ -63,21 +38,11 @@ class SubMatrix(object):
     _bottom_right = None
 
     def __eq__(self, other):
-        """
-        
-        Arguments:
-        - `self`:
-        - `other`:
-        """
         return self._top_left == other._top_left and self._bottom_right == other._bottom_right
 
 
     def __contains__(self, other):
-        """
-        
-        Arguments:
-        - `self`:
-        - `other`:
+        """Returns whether or not the other submatrix is inside this one.
         """
         if matrix_logger:
             matrix_logger(u"Checking if {0} is inside {1}".format(repr(other), repr(self)))
@@ -103,54 +68,32 @@ class SubMatrix(object):
 
 
     def __repr__(self):
-        """
-        
-        Arguments:
-        - `self`:
-        """
         return u"{0}(tl:{1}, br:{2})".format(self.__class__.__name__, repr(self._top_left), repr(self._bottom_right))
 
     def __str__(self):
-        """
-        
-        Arguments:
-        - `self`:
-        """
         return u"top left: {0}\n\tbottom right: {1}".format(str(self._top_left), str(self._bottom_right))
 
     @property
     def top_left(self):
-        """
-        
-        Arguments:
-        - `self`:
+        """Top left coordinates of the submatrix.
         """
         return self._top_left
 
     @property
     def bottom_right(self):
-        """
-        
-        Arguments:
-        - `self`:
+        """Bottom right coordinates of the submatrix.
         """
         return self._bottom_right
 
     @property
     def tl(self):
-        """
-        
-        Arguments:
-        - `self`:
+        """Top left coordinates of the submatrix.
         """
         return self._top_left
 
     @property
     def br(self):
-        """
-        
-        Arguments:
-        - `self`:
+        """Bottom right coordinates of the submatrix.
         """
         return self._bottom_right
     
@@ -158,8 +101,8 @@ class SubMatrix(object):
         """
         
         Arguments:
-        - `top_left`:
-        - `bottom_right`:
+        - `top_left`: Top left coordinates of the submatrix.
+        - `bottom_right`: Bottom right coordinates of the submatrix.
         """
         if not isinstance(top_left, Coords):
             raise TypeException("Must be of a Coords type")
@@ -174,7 +117,6 @@ class WordMatrix(object):
     """The class that has the words in it like in a matrix.
     """
     _matrix_string = None
-    _transposed = None
     _wordlist = None
     _submatrices = None
 
