@@ -123,9 +123,6 @@ class WordMatrix(object):
     @property
     def wordlist(self):
         """Returns the current list of words.
-        
-        Arguments:
-        - `self`:
         """
         return self._wordlist
     
@@ -133,7 +130,7 @@ class WordMatrix(object):
         """Stores a word matrix.
         
         Arguments:
-        - `matrix_string`:
+        - `matrix_string`: The matrix of letters that will be used.
         """
         self._wordlist = []
         if isinstance(matrix_string, str) or isinstance(matrix_string, unicode):
@@ -146,8 +143,7 @@ class WordMatrix(object):
         """Returns an evenly spaced matrix list of strings.
         
         Arguments:
-        - `self`:
-        - `matrix_string`:
+        - `matrix_string`: The string that will be split by new lines into a matrix.
         """
         uneven_matrix = matrix_string.decode('utf-8').split(u'\n')
         line_lengths = map(len, uneven_matrix)
@@ -160,9 +156,6 @@ class WordMatrix(object):
     def find_words(self):
         """Finds all the words in the matrix (does not validate them),
         and stores them in the word list.
-        
-        Arguments:
-        - `self`:
         """
         horiz_list = self._matrix_string
         vert_list = map(None, *horiz_list)
@@ -180,9 +173,6 @@ class WordMatrix(object):
     def find_contiguous_blocks(self):
         """Return list of coordinates in the matrix for contiguous
         blocks of letters. Must be at least of size 2x2.
-        
-        Arguments:
-        - `self`:
         """
         submatrices = []
 
@@ -312,11 +302,6 @@ if __name__ == '__main__':
     import logging
     logging.basicConfig(level=logging.DEBUG)
     def log_fn(mesg):
-        """
-        
-        Arguments:
-        - `mesg`:
-        """
         logging.debug(mesg)
 
     matrix_logger = log_fn
@@ -388,11 +373,6 @@ train
             print u"\t" + word
 
     def find_and_print_matrices(wm):
-        """
-        
-        Arguments:
-        - `wm`:
-        """
         wm.find_contiguous_blocks()
         for matrix in wm._submatrices:
             print u"\t" + repr(matrix)
