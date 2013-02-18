@@ -12,18 +12,12 @@ class DictAndLetters(object):
     @property
     def wordlist(self):
         """Returns the word list.
-        
-        Arguments:
-        - `self`:
         """
         return self._wordlist
 
     @property
     def letter_points(self):
         """Returns the letters and points dictionary.
-        
-        Arguments:
-        - `self`:
         """
         return self._letter_points
 
@@ -67,8 +61,7 @@ class DictAndLetters(object):
         """Returns whether the word is in the word list.
         
         Arguments:
-        - `self`:
-        - `word`:
+        - `word`: The word to compare.
         """
         return word in self._wordlist
 
@@ -76,8 +69,7 @@ class DictAndLetters(object):
         """Return the number of points for a word.
         
         Arguments:
-        - `self`:
-        - `word`:
+        - `word`: The word we want points from.
         """
         _sum = 0
         for letter in word:
