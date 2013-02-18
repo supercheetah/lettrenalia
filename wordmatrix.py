@@ -281,13 +281,13 @@ class WordMatrix(object):
                     print_matrix(Coords(x, y, "^"))
                 if (not col in empty) and next_is_occupied(x, y) and \
                         below_is_occupied(x, y):
-                    bottom_rt = find_bottom_right(x, y)
+                    bottom_right = find_bottom_right(x, y)
                     current_coords = Coords(x, y)
-                    if (bottom_rt.x - x > 0) and (bottom_rt.y - y > 0):
-                        add_submatrix(current_coords, bottom_rt)
+                    if (bottom_right.x - x > 0) and (bottom_right.y - y > 0):
+                        add_submatrix(current_coords, bottom_right)
                     stop_x = x
-                    for _x in reversed(xrange(x, bottom_rt.x - 1)):
-                        for _y in reversed(xrange(y, bottom_rt.y + 1)):
+                    for _x in reversed(xrange(x, bottom_right.x - 1)):
+                        for _y in reversed(xrange(y, bottom_right.y + 1)):
                             br_iter = find_bottom_right(_x, y, xstop = _x, ystop = _y)
                             if br_iter.y - y > 0 and br_iter.x - x > 0:
                                 add_submatrix(current_coords, br_iter)                                
