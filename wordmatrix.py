@@ -133,7 +133,7 @@ class WordMatrix(object):
         - `matrix_string`: The matrix of letters that will be used.
         """
         self._wordlist = []
-        if isinstance(matrix_string, str) or isinstance(matrix_string, unicode):
+        if isinstance(matrix_string, basestring):
             self._matrix_string = self.split_string(matrix_string)
             self.find_words()
         else:
