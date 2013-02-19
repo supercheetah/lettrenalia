@@ -13,9 +13,9 @@ class Coords(object):
     
     def __init__(self, x, y, highlight_char = None):
         if not isinstance(x, int):
-            raise TypeException("x is not an integer.")
+            raise TypeError("x is not an integer.")
         if not isinstance(y, int):
-            raise TypeException("y is not an integer.")
+            raise TypeError("y is not an integer.")
         self.x = x
         self.y = y
         self.highlight_char = highlight_char
@@ -105,9 +105,9 @@ class SubMatrix(object):
         - `bottom_right`: Bottom right coordinates of the submatrix.
         """
         if not isinstance(top_left, Coords):
-            raise TypeException("Must be of a Coords type")
+            raise TypeError("Must be of a Coords type")
         if not isinstance(bottom_right, Coords):
-            raise TypeException("Must be of a Coords type")
+            raise TypeError("Must be of a Coords type")
         self._top_left = top_left
         self._bottom_right = bottom_right
         
