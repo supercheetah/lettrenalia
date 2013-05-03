@@ -36,6 +36,7 @@ class SubMatrix(object):
     """
     _top_left = None
     _bottom_right = None
+    _parent = None
 
     def __eq__(self, other):
         return self._top_left == other._top_left and self._bottom_right == other._bottom_right
@@ -96,8 +97,19 @@ class SubMatrix(object):
         """Bottom right coordinates of the submatrix.
         """
         return self._bottom_right
+
+    def GetMatrix():
+        """Get the actual submatrix itself.
+        """
+        _yrange = xrange(self.tl.y, self.br.y)
+        xleft, xright = self.tl.x, self.br.x
+        _matrix = []
+        for _y in _yrange:
+            _matrix.append(_parent[_y][xleft:xright])
+
+        return _matrix
     
-    def __init__(self, top_left, bottom_right):
+    def __init__(self, top_left, bottom_right, parent):
         """
         
         Arguments:
@@ -110,6 +122,7 @@ class SubMatrix(object):
             raise TypeError("Must be of a Coords type")
         self._top_left = top_left
         self._bottom_right = bottom_right
+        self._parent = parent
         
 
 
@@ -263,7 +276,7 @@ class WordMatrix(object):
             return True
 
         def add_submatrix(current_coords, bottom_right):
-            subm = SubMatrix(current_coords, bottom_right)
+            subm = SubMatrix(current_coords, bottom_right, self)
             is_sub_submatrix = False
             for _subm in submatrices:
                 if subm in _subm:
